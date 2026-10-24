@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protocol Arena: cost per completed session, home gear vs the membership</title>
+<meta name="description" content="A small browser game that settles home biohacking gear versus paid memberships on one number: what a session actually cost you this year, skipped weeks included.">
+</head>
+<body>
+<main>
+<h1>Protocol Arena</h1>
+<p>Pick a duel. Both lanes run the same 52 weeks at three sessions a week.
+Fixed costs accrue every week whether you show up or not. A session only
+bills its per-visit cost when you actually complete it. At the end of the
+year you get the only number that matters: cost per completed session.</p>
+
+<section id="controls">
+  <label for="duel">Duel</label>
+  <select id="duel"></select>
+  <label for="seed">Seed</label>
+  <input id="seed" type="number" value="2026" min="1" max="9999">
+  <button id="run" type="button">Run the year</button>
+</section>
+
+<section id="board" hidden>
+  <h2 id="duel-label"></h2>
+  <div id="lanes"></div>
+  <p id="verdict"></p>
+</section>
+
+<footer>
+  <p>Built by the people behind
+  <a href="https://hackedself.com/">cost-per-session protocol math</a>, where
+  the training and recovery protocols get the same treatment: measured, not
+  assumed.</p>
+</footer>
+</main>
+<script src="game.js"></script>
+<script>
+(function () {
+  var select = document.getElementById("duel");
+  var keys = Object.keys(DUELS);
+  keys.forEach(function (k) {
+    var o = document.createElement("option");
+    o.value = k;
+    o.textContent = DUELS[k].label;
+    select.appendChild(o);
+  });
+
+  function render(res) {
+    document.getElementById("board").hidden = false;
+    document.getElementById("duel-label").textContent = res.label;
+    var lanes = document.getElementById("lanes");
+    lanes.innerHTML = "";
+    [res.home, res.away].forEach(function (lane) {
+      var card = document.createElement("div");
+      card.className = "lane";
+      var h = document.createElement("h3");
+      h.textContent = lane.name;
+      var p = document.createElement("p");
+      p.textContent = lane.completed + " of " + SLOTS + " sessions completed, " +
+        money(lane.spend) + " spent, " + money(lane.costPer) +
+        " per completed session. " + lane.note + ".";
+      card.appendChild(h);
+      card.appendChild(p);
+      lanes.appendChild(card);
+    });
+    document.getElementById("verdict").textContent = res.verdict;
+  }
+
+  document.getElementById("run").addEventListener("click", function () {
+    var seed = parseInt(document.getElementById("seed").value, 10) || 2026;
+    render(runDuel(select.value, seed));
+  });
+
+  select.addEventListener("change", function () {
+    document.getElementById("board").hidden = true;
+  });
+})();
+</script>
+</body>
+</html>
